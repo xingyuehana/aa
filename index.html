@@ -38,19 +38,25 @@
             }
 
             #p {
-                background-image: url('imgs/p.png');
                 background-position: bottom center;
                 background-size: contain;
                 background-repeat: no-repeat;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 120px;
+                /* initial visual handled by classes */
             }
 
-            /* new background div */
-            #op {
-                background-image: url('imgs/op.png');
-                background-position: bottom center;
-                background-size: contain;
-                background-repeat: no-repeat;
+            /* mouth state classes for #p */
+            .mouth-closed {
+                background-image: url('imgs/p.png');
             }
+            .mouth-open {
+                background-image: url('imgs/op.png');
+            }
+
+            /* removed duplicate background div (#op) */
             .title{
                 width: 100%;
                 max-width: 600px;
@@ -62,7 +68,72 @@
         <div class="container">
             <img class="title" src="imgs/popcat.svg" alt="POPCAT CLASSIC" width="400">
             <div class="cat-img" id="p">0</div>
-            <div class="cat-img" id="op"></div>
         </div>
+        <script>
+            let counter = 0;
+            const pEl = document.getElementById('p');
+            pEl.innerText = counter;
+            console.log(counter);
+
+            // preload open-mouth image
+            const preloadedOp = new Image();
+            preloadedOp.src = 'imgs/op.png';
+
+            // audio for pop
+            const popAudio = new Audio('pops/pop1.mp3');
+            popAudio.preload = 'auto';
+            function playPop() {
+                try {
+                    popAudio.currentTime = 0;
+                    popAudio.play();
+                } catch (e) {}
+            }
+
+            function incrementCounter() {
+                counter++;
+                pEl.innerText = counter;
+                console.log(counter);
+            }
+
+            // toggle mouth image on press/release using classes
+            function showOpenMouth() {
+                pEl.classList.add('mouth-open');
+                pEl.classList.remove('mouth-closed');
+            }
+            function showClosedMouth() {
+                pEl.classList.add('mouth-closed');
+                pEl.classList.remove('mouth-open');
+            }
+
+            // ensure initial class
+            pEl.classList.add('mouth-closed');
+
+            // mouse/touch listeners
+            pEl.addEventListener('mousedown', incrementCounter);
+            pEl.addEventListener('mousedown', showOpenMouth);
+            pEl.addEventListener('mouseup', function() { setTimeout(showClosedMouth, 25); });
+            pEl.addEventListener('mouseleave', showClosedMouth);
+            pEl.addEventListener('mousedown', playPop);
+            pEl.addEventListener('touchstart', function(e){ e.preventDefault(); incrementCounter(); showOpenMouth(); playPop(); }, {passive:false});
+            pEl.addEventListener('touchend', showClosedMouth);
+
+            // keyboard interaction (Space / Enter)
+            let keyPressed = false;
+            document.addEventListener('keydown', function(e) {
+                if ((e.code === 'Space' || e.code === 'Enter') && !keyPressed) {
+                    keyPressed = true;
+                    e.preventDefault();
+                    incrementCounter();
+                    showOpenMouth();
+                    playPop();
+                }
+            });
+            document.addEventListener('keyup', function(e) {
+                if (e.code === 'Space' || e.code === 'Enter') {
+                    keyPressed = false;
+                    setTimeout(showClosedMouth, 25);
+                }
+            });
+        </script>
     </body>
 </html>
